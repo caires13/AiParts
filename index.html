@@ -132,9 +132,10 @@
         </div>
       </div>
       <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <label class="text-sm">Temperatura
-          <input id="temperature" type="number" step="0.1" min="0" max="2" value="1" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
-        </label>
+         <label class="text-sm">Temperatura
+           <input id="temperature" type="number" step="0.1" min="0" max="2" value="1" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
+           <div id="temperatureHint" class="text-xs text-slate-400 mt-1 hidden">Este modelo usa sempre temperatura 1 (customização não aplicável).</div>
+         </label>
         <label class="text-sm">max_tokens
           <input id="maxTokens" type="number" min="256" max="8192" value="2048" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
         </label>
@@ -487,11 +488,20 @@
       return 'max_tokens';
     }
 
+    function supportsCustomTemperature(model){
+      const m = (model||'').toLowerCase();
+      if (m.startsWith('gpt-5') || m.startsWith('o1') || m.startsWith('o3')) return false;
+      return true;
+    }
+
     async function callOpenAIAPI(apiKey, model, messages, temperature, maxTokens){
       const controller = new AbortController();
       const to = setTimeout(()=> controller.abort(), App.Config.timeouts.apiMs);
       try {
-        const payload = { model, messages, temperature };
+        const payload = { model, messages };
+        if (supportsCustomTemperature(model)) {
+          payload.temperature = temperature;
+        }
         payload[getMaxTokensParamName(model)] = maxTokens;
         const res = await fetch(App.Config.openAIEndpoint, {
           method: 'POST',
@@ -519,7 +529,7 @@
       }
     }
 
-    App.Providers.OpenAI = { callOpenAIAPI, getMaxTokensParamName };
+    App.Providers.OpenAI = { callOpenAIAPI, getMaxTokensParamName, supportsCustomTemperature };
   })();
 
   // ============================
@@ -586,7 +596,9 @@
         if (App.State.settings.debug){
           const model = document.getElementById('model').value.trim() || App.Config.defaultModel;
           const maxParam = App.Providers.OpenAI.getMaxTokensParamName(model);
-          showDebugPayload({ endpoint: App.Config.openAIEndpoint, model, temperature: App.State.settings.temperature, [maxParam]: App.State.settings.maxTokens, messages, imageFiles: App.State.images.map(i=> i.name) });
+          const dbg = { endpoint: App.Config.openAIEndpoint, model, [maxParam]: App.State.settings.maxTokens, messages, imageFiles: App.State.images.map(i=> i.name) };
+          if (App.Providers.OpenAI.supportsCustomTemperature(model)) dbg.temperature = App.State.settings.temperature;
+          showDebugPayload(dbg);
           App.UI.setStatus('Debug: payload gerado. Nenhuma chamada foi feita.');
           App.UI.showChat();
           App.State.conversationHistory.push({ role: 'user', content: messages[1].content });
@@ -632,7 +644,9 @@
         if (App.State.settings.debug){
           const model = document.getElementById('model').value.trim() || App.Config.defaultModel;
           const maxParam = App.Providers.OpenAI.getMaxTokensParamName(model);
-          showDebugPayload({ endpoint: App.Config.openAIEndpoint, model, temperature: App.State.settings.temperature, [maxParam]: App.State.settings.maxTokens, messages: buildMessagesForChat() });
+          const dbg = { endpoint: App.Config.openAIEndpoint, model, [maxParam]: App.State.settings.maxTokens, messages: buildMessagesForChat() };
+          if (App.Providers.OpenAI.supportsCustomTemperature(model)) dbg.temperature = App.State.settings.temperature;
+          showDebugPayload(dbg);
           App.UI.pushChat('assistant', '_[Debug] Nenhuma chamada foi feita._');
           App.UI.setStatus('Debug: payload gerado.');
           return;
@@ -718,7 +732,15 @@
 
     // Model field sync
     const modelEl = document.getElementById('model');
-    modelEl.addEventListener('input', ()=>{ App.State.settings.model = modelEl.value.trim() || App.Config.defaultModel; App.Storage.save(); });
+    modelEl.addEventListener('input', ()=>{
+      App.State.settings.model = modelEl.value.trim() || App.Config.defaultModel;
+      const tInput = document.getElementById('temperature');
+      const tHint = document.getElementById('temperatureHint');
+      const supports = App.Providers.OpenAI.supportsCustomTemperature(App.State.settings.model);
+      tInput.disabled = !supports;
+      tHint.classList.toggle('hidden', supports);
+      App.Storage.save();
+    });
 
     // Debounced API key format validation (no network ping)
     let keyTimer = null;
@@ -741,6 +763,14 @@
     App.Storage.load();
     document.getElementById('model').value = App.State.settings.model || App.Config.defaultModel;
     App.UI.setDebugVisible(App.State.settings.debug);
+    // Initialize temperature UI state based on current model
+    try {
+      const tInput = document.getElementById('temperature');
+      const tHint = document.getElementById('temperatureHint');
+      const supports = App.Providers.OpenAI.supportsCustomTemperature(App.State.settings.model || App.Config.defaultModel);
+      tInput.disabled = !supports;
+      tHint.classList.toggle('hidden', supports);
+    } catch {}
   })();
 
   </script>
