@@ -17,7 +17,7 @@ export async function callAI({ apiKey, model, messages, temperature, maxTokens }
     });
     if (!res.ok){
       let msg = `Erro da API (${res.status})`;
-      try { const j = await res.json(); msg = j?.error?.message || msg; } catch {}
+      try { const text = await res.text(); try { const j = JSON.parse(text); msg = j?.error?.message || msg; } catch { msg = text || msg; } } catch {}
       throw new APIError(msg, res.status);
     }
     const data = await res.json();
