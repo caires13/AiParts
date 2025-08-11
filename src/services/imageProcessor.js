@@ -57,7 +57,7 @@ export async function processImages(files, onProgress){
   const arr = Array.from(files||[]);
   if (!arr.length) return [];
   let resolved = false;
-  return new Promise((resolve, reject)=>{
+  const base = await new Promise((resolve, reject)=>{
     const w = createWorker();
     const timer = setTimeout(()=>{
       if (resolved) return;
@@ -86,6 +86,55 @@ export async function processImages(files, onProgress){
     };
 
     w.postMessage({ files: arr });
+  });
+
+  // Compress/resize to reduce payload size before sending to API
+  const optimized = [];
+  for (const item of base){
+    try {
+      const small = await downscaleDataUrl(item.dataUrl, 1280, 0.8, 1_500_000);
+      optimized.push({ ...item, dataUrl: small });
+    } catch {
+      optimized.push(item);
+    }
+  }
+  return optimized;
+}
+
+async function downscaleDataUrl(dataUrl, maxDim = 1280, initialQuality = 0.8, targetMaxBytes = 1_500_000){
+  const img = await loadImage(dataUrl);
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(img.width * scale));
+  canvas.height = Math.max(1, Math.round(img.height * scale));
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  // Prefer webp for better compression
+  let quality = initialQuality;
+  let out = canvas.toDataURL('image/webp', quality);
+  let bytes = estimateBase64Size(out);
+  while (bytes > targetMaxBytes && quality > 0.4){
+    quality -= 0.1;
+    out = canvas.toDataURL('image/webp', quality);
+    bytes = estimateBase64Size(out);
+  }
+  return out;
+}
+
+function estimateBase64Size(dataUrl){
+  try {
+    const base64 = (dataUrl.split(',')[1]||'');
+    return Math.ceil((base64.length * 3) / 4); // rough bytes
+  } catch { return dataUrl.length; }
+}
+
+function loadImage(src){
+  return new Promise((resolve, reject)=>{
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = reject;
+    i.src = src;
   });
 }
 
