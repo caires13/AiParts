@@ -4,31 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AI Parts Identifier — Offset/Flexo</title>
-  <!-- Tailwind via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Marked (Markdown renderer) -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <!-- DOMPurify (Sanitization) -->
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
-  <style>
-    /* Small custom CSS */
-    :root {
-      --card: #0b1020;
-      --card-2: #0e1326;
-      --stroke: #223;
-    }
-    html, body { height: 100%; }
-    body { background: #0a0f1e; color: #e6ebff; }
-    .card { background: var(--card); border: 1px solid var(--stroke); border-radius: 1rem; }
-    .card-2 { background: var(--card-2); border: 1px solid var(--stroke); border-radius: 1rem; }
-    .scroll-y { overflow-y: auto; }
-    .dropzone { border: 2px dashed #374151; }
-    .dropzone.dragover { border-color: #60a5fa; background: rgba(96,165,250,0.1); }
-    .chat-msg pre { white-space: pre-wrap; }
-    .btn { @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-medium border border-slate-700 hover:border-slate-500 transition; }
-    .btn-primary { @apply bg-blue-600 hover:bg-blue-500 text-white; }
-    .badge { @apply text-xs rounded-md px-2 py-1 border border-slate-700 bg-slate-800; }
-  </style>
+  <link rel="stylesheet" href="./src/assets/custom.css" />
 </head>
 <body class="min-h-screen">
   <header class="sticky top-0 z-20 backdrop-blur supports-[backdrop-filter]:bg-black/30 bg-black/40 border-b border-slate-800">
@@ -43,11 +20,8 @@
   </header>
 
   <main class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Left: Form -->
     <section class="card p-4 lg:col-span-1">
       <h2 class="text-lg font-semibold mb-3">Informações da Peça</h2>
-
-      <!-- API key + model line -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         <div class="md:col-span-2">
           <label class="text-sm block mb-1" for="apiKey">OpenAI API Key</label>
@@ -60,36 +34,30 @@
         </div>
       </div>
 
-      <!-- Dynamic fields -->
       <div id="fields" class="space-y-3"></div>
       <div class="mt-3 flex gap-2">
         <button id="addField" class="btn">+ Campo</button>
         <button id="resetFields" class="btn">Redefinir</button>
       </div>
 
-      <!-- Primary action -->
       <div class="mt-6 flex items-center gap-3">
         <button id="analyzeBtn" class="btn btn-primary">Analisar com IA</button>
         <span id="status" aria-live="polite" class="text-sm text-slate-300"></span>
       </div>
     </section>
 
-    <!-- Right: Images -->
     <section class="card p-4 lg:col-span-1">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-lg font-semibold">Imagens</h2>
         <div class="text-xs text-slate-400">Tipos: JPG, PNG, WEBP, GIF · 10 arquivos máx. · 10 MB cada</div>
       </div>
-
       <div id="dropzone" class="dropzone rounded-xl p-6 text-center cursor-pointer">
         <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="hidden" />
         <p class="text-slate-300">Arraste e solte aqui, ou <span class="underline">clique para selecionar</span></p>
       </div>
-
       <div id="previews" class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3"></div>
     </section>
 
-    <!-- Full-width: Chat -->
     <section class="card p-4 lg:col-span-2 hidden" id="chatSection">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-lg font-semibold">Chat</h2>
@@ -97,15 +65,11 @@
           <label class="text-sm inline-flex items-center gap-2"><input type="checkbox" id="toggleDebug" class="rounded" /> Debug</label>
         </div>
       </div>
-
       <div id="chat" class="space-y-4 max-h-[50vh] scroll-y p-2 card-2"></div>
-
       <form id="followupForm" class="mt-4 flex gap-2">
         <input id="followupInput" class="flex-1 rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" placeholder="Envie uma pergunta de acompanhamento..." />
         <button class="btn btn-primary" type="submit">Enviar</button>
       </form>
-
-      <!-- Debug panel -->
       <details id="debugPanel" class="mt-4 hidden">
         <summary class="cursor-pointer mb-2">Pré-visualização do payload (Debug)</summary>
         <pre id="debugContent" class="text-xs whitespace-pre-wrap bg-slate-900 p-3 rounded-lg border border-slate-700"></pre>
@@ -113,7 +77,6 @@
     </section>
   </main>
 
-  <!-- Settings Modal -->
   <div id="settingsModal" class="fixed inset-0 hidden items-center justify-center">
     <div class="absolute inset-0 bg-black/70" data-close></div>
     <div class="relative z-10 w-[95%] max-w-3xl card p-4" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
@@ -132,10 +95,10 @@
         </div>
       </div>
       <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-         <label class="text-sm">Temperatura
-           <input id="temperature" type="number" step="0.1" min="0" max="2" value="1" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
-           <div id="temperatureHint" class="text-xs text-slate-400 mt-1 hidden">Este modelo usa sempre temperatura 1 (customização não aplicável).</div>
-         </label>
+        <label class="text-sm">Temperatura
+          <input id="temperature" type="number" step="0.1" min="0" max="2" value="1" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
+          <div id="temperatureHint" class="text-xs text-slate-400 mt-1 hidden">Este modelo usa sempre temperatura 1 (customização não aplicável).</div>
+        </label>
         <label class="text-sm">max_tokens
           <input id="maxTokens" type="number" min="256" max="8192" value="2048" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" />
         </label>
@@ -152,627 +115,7 @@
     </div>
   </div>
 
-  <script>
-  // ============================
-  // App Namespace & Config
-  // ============================
-  const App = {
-    Config: {
-      openAIEndpoint: 'https://api.openai.com/v1/chat/completions',
-      defaultModel: 'gpt-5',
-      timeouts: { apiMs: 60_000, workerMs: 10_000 },
-      images: { maxFiles: 10, maxSize: 10 * 1024 * 1024, types: ['image/jpeg','image/png','image/webp','image/gif'] },
-      ui: { debounceMs: 600 },
-      defaults: {
-        persona: `Você é um especialista em peças de máquinas de impressão offset e flexográfica (Ryobi/Heidelberg/Komori, etc.). Identifique a peça, explique a função, liste especificações técnicas, possíveis part numbers, compatibilidades e variações. Sugira fornecedores internacionais com links pesquisáveis (sem inventar URLs). Quando faltar dado, peça informações claras e objetivas. Priorize respostas concisas, com seções e listas. Idioma: português brasileiro, a menos que o usuário escreva em inglês.`,
-        analysis: `Analise as informações abaixo e as imagens. Gere: (1) identificação da peça; (2) função; (3) specs e materiais; (4) part numbers prováveis; (5) compatibilidade com modelos; (6) sugestões de fornecedores e termos de busca (EN/PT); (7) próximas perguntas para confirmar. Não invente links; ofereça termos de busca específicos.`
-      }
-    },
-    State: {
-      conversationHistory: [], // only user/assistant messages
-      images: [], // {file, name, mime, dataUrl}
-      settings: {
-        model: 'gpt-5',
-        persona: '',
-        analysis: '',
-        temperature: 1,
-        maxTokens: 2048,
-        debug: false,
-        autoSave: true,
-        saveKey: false
-      }
-    },
-    Logger: {
-      log: (...a)=>console.log('[App]', ...a),
-      warn: (...a)=>console.warn('[App]', ...a),
-      error: (...a)=>console.error('[App]', ...a),
-    },
-    Errors: {
-      AppError: class AppError extends Error { constructor(message){ super(message); this.name='AppError'; } },
-      ValidationError: class ValidationError extends Error { constructor(message){ super(message); this.name='ValidationError'; } },
-      APIError: class APIError extends Error { constructor(message,status){ super(message); this.name='APIError'; this.status=status; } },
-    },
-    Storage: {
-      load() {
-        try {
-          const s = JSON.parse(localStorage.getItem('ai-parts-settings')||'{}');
-          if (s && typeof s==='object') {
-            App.State.settings = { ...App.State.settings, ...s };
-          }
-          const savedKey = localStorage.getItem('ai-parts-apikey');
-          if (savedKey) document.getElementById('apiKey').value = savedKey;
-        } catch(e){ App.Logger.warn('Storage load fail', e); }
-      },
-      save() {
-        try {
-          if (App.State.settings.autoSave) {
-            localStorage.setItem('ai-parts-settings', JSON.stringify(App.State.settings));
-          }
-          if (App.State.settings.saveKey) {
-            const k = document.getElementById('apiKey').value.trim();
-            if (k) localStorage.setItem('ai-parts-apikey', k);
-          } else {
-            localStorage.removeItem('ai-parts-apikey');
-          }
-        } catch(e){ App.Logger.warn('Storage save fail', e); }
-      }
-    },
-    UI: {},
-    Images: {},
-    Providers: {},
-    Controller: {}
-  };
-
-  // ============================
-  // UI Helpers & Rendering
-  // ============================
-  (function(){
-    const { ValidationError } = App.Errors;
-
-    const statusEl = document.getElementById('status');
-    const fieldsEl = document.getElementById('fields');
-    const previewsEl = document.getElementById('previews');
-    const dropzoneEl = document.getElementById('dropzone');
-    const fileInputEl = document.getElementById('fileInput');
-    const chatEl = document.getElementById('chat');
-    const chatSection = document.getElementById('chatSection');
-    const debugPanel = document.getElementById('debugPanel');
-    const debugContent = document.getElementById('debugContent');
-
-    function setStatus(msg){ statusEl.textContent = msg || ''; }
-
-    function addField(label='', value=''){
-      const w = document.createElement('div');
-      w.className = 'grid grid-cols-12 gap-2';
-      w.innerHTML = `
-        <input class="col-span-4 rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 field-label" placeholder="Campo (ex.: Descrição)" value="${label}" />
-        <input class="col-span-7 rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 field-value" placeholder="Valor" value="${value}" />
-        <button class="col-span-1 btn" type="button">✕</button>
-      `;
-      const btn = w.querySelector('button');
-      btn.addEventListener('click', ()=> w.remove());
-      fieldsEl.appendChild(w);
-    }
-
-    function resetFields(){
-      fieldsEl.innerHTML = '';
-      addField('Descrição','');
-      addField('Marcações Visíveis','');
-      addField('Máquina/Modelo','');
-      addField('Dimensões (mm)','');
-      addField('Material','');
-      addField('Outros Detalhes','');
-    }
-
-    function getFields(){
-      const labels = fieldsEl.querySelectorAll('.field-label');
-      const values = fieldsEl.querySelectorAll('.field-value');
-      const out = [];
-      labels.forEach((l,i)=>{
-        const label = (l.value||'').trim();
-        const val = (values[i].value||'').trim();
-        if (label && val) out.push({label, value: val});
-      });
-      if (!out.length) throw new ValidationError('Adicione pelo menos um campo com valor.');
-      return out;
-    }
-
-    function renderPreviews(){
-      previewsEl.innerHTML = '';
-      App.State.images.forEach((img, idx)=>{
-        const d = document.createElement('div');
-        d.className = 'relative';
-        d.innerHTML = `
-          <img src="${img.dataUrl||''}" alt="${img.name}" class="w-full h-28 object-cover rounded-lg border border-slate-700"/>
-          <button class="absolute top-2 right-2 btn px-2 py-1 text-xs">Remover</button>
-          <div class="mt-1 text-xs text-slate-300 truncate">${img.name}</div>
-        `;
-        d.querySelector('button').addEventListener('click', ()=>{
-          App.State.images.splice(idx,1);
-          renderPreviews();
-        });
-        previewsEl.appendChild(d);
-      });
-    }
-
-    function ensureImages(){
-      if (!App.State.images.length) throw new ValidationError('Adicione pelo menos uma imagem.');
-    }
-
-    function pushChat(role, markdown){
-      const item = document.createElement('div');
-      item.className = 'chat-msg';
-      const who = role==='user' ? 'Você' : 'AI';
-      const bubble = document.createElement('div');
-      bubble.className = 'p-3 rounded-xl border border-slate-700 ' + (role==='user' ? 'bg-slate-900' : 'bg-slate-800');
-      const safe = DOMPurify.sanitize(marked.parse(markdown||''));
-      bubble.innerHTML = `<div class="text-xs text-slate-400 mb-1">${who}</div>${safe}`;
-      item.appendChild(bubble);
-      chatEl.appendChild(item);
-      chatEl.scrollTop = chatEl.scrollHeight;
-    }
-
-    function showChat(){ chatSection.classList.remove('hidden'); }
-
-    function setDebugVisible(v){
-      debugPanel.classList.toggle('hidden', !v);
-      document.getElementById('toggleDebug').checked = !!v;
-    }
-
-    // expose
-    App.UI = { setStatus, addField, resetFields, getFields, renderPreviews, ensureImages, pushChat, showChat, setDebugVisible };
-
-    // Init default fields
-    resetFields();
-
-    // Events: add / reset fields
-    document.getElementById('addField').addEventListener('click', ()=> addField());
-    document.getElementById('resetFields').addEventListener('click', resetFields);
-
-    // Dropzone handlers
-    function handleFiles(files){
-      const arr = Array.from(files || []);
-      const { maxFiles, maxSize, types } = App.Config.images;
-      if (App.State.images.length + arr.length > maxFiles) {
-        throw new ValidationError(`Máximo de ${maxFiles} imagens.`);
-      }
-      for (const f of arr) {
-        if (!types.includes(f.type)) throw new ValidationError(`Tipo não permitido: ${f.type}`);
-        if (f.size > maxSize) throw new ValidationError(`Arquivo muito grande: ${f.name}`);
-      }
-      // queue files
-      arr.forEach(f=> App.State.images.push({ file: f, name: f.name, mime: f.type, dataUrl: null }));
-      // process via worker/fallback
-      App.Images.processAll()
-        .then(()=>{ renderPreviews(); setStatus('Imagens preparadas.'); })
-        .catch(err=> App.Controller.handleError(err));
-    }
-
-    dropzoneEl.addEventListener('click', ()=> fileInputEl.click());
-    dropzoneEl.addEventListener('dragover', (e)=>{ e.preventDefault(); dropzoneEl.classList.add('dragover'); });
-    dropzoneEl.addEventListener('dragleave', ()=> dropzoneEl.classList.remove('dragover'));
-    dropzoneEl.addEventListener('drop', (e)=>{ e.preventDefault(); dropzoneEl.classList.remove('dragover'); try{ handleFiles(e.dataTransfer.files); }catch(err){ App.Controller.handleError(err); } });
-    fileInputEl.addEventListener('change', ()=>{ try{ handleFiles(fileInputEl.files); fileInputEl.value=''; }catch(err){ App.Controller.handleError(err); }});
-
-    // Debug toggle mirror
-    document.getElementById('toggleDebug').addEventListener('change', (e)=>{
-      App.State.settings.debug = !!e.target.checked; App.UI.setDebugVisible(App.State.settings.debug); App.Storage.save();
-    });
-
-    // Download debug payload
-    document.getElementById('downloadDebug').addEventListener('click', (e)=>{
-      e.preventDefault();
-      const blob = new Blob([debugContent.textContent||'' ], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'debug-payload.json';
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    });
-  })();
-
-  // ============================
-  // Images: Worker + Fallback
-  // ============================
-  ;(function(){
-    const workerCode = () => {
-      self.onmessage = async (e) => {
-        const { files } = e.data;
-        function toBase64(uint8){
-          // Base64 from Uint8Array
-          let bin='';
-          const len = uint8.byteLength;
-          for (let i=0;i<len;i++){ bin += String.fromCharCode(uint8[i]); }
-          return btoa(bin);
-        }
-        try {
-          const out = [];
-          for (let i=0; i<files.length; i++){
-            const f = files[i];
-            const buf = await f.arrayBuffer();
-            const base64 = toBase64(new Uint8Array(buf));
-            const dataUrl = `data:${f.type};base64,${base64}`;
-            out.push({ idx: i, name: f.name, mime: f.type, dataUrl });
-            self.postMessage({ type: 'progress', current: i+1, total: files.length });
-          }
-          self.postMessage({ type: 'done', images: out });
-        } catch (err) {
-          self.postMessage({ type: 'error', message: err?.message || 'Erro no worker' });
-        }
-      };
-    };
-
-    function createWorker(){
-      const code = workerCode.toString();
-      const blob = new Blob([`(${code})()`], { type: 'application/javascript' });
-      const url = URL.createObjectURL(blob);
-      const w = new Worker(url);
-      w._revoke = () => URL.revokeObjectURL(url);
-      return w;
-    }
-
-    async function processAll(){
-      const files = App.State.images.map(i=> i.file);
-      if (!files.length) return;
-      App.UI.setStatus('Preparando imagens...');
-      let resolved = false;
-
-      return new Promise((resolve, reject)=>{
-        const w = createWorker();
-        const timer = setTimeout(()=>{
-          if (resolved) return;
-          try { w.terminate(); w._revoke && w._revoke(); } catch {}
-          // fallback
-          fallbackProcess(files).then(()=>{ resolved = true; resolve(); }).catch(reject);
-        }, App.Config.timeouts.workerMs);
-
-        w.onmessage = (e)=>{
-          const { type } = e.data || {};
-          if (type === 'progress'){
-            App.UI.setStatus(`Processando imagens (${e.data.current}/${e.data.total})...`);
-          } else if (type === 'done'){
-            clearTimeout(timer);
-            try { w.terminate(); w._revoke && w._revoke(); } catch {}
-            const arr = e.data.images || [];
-            // write back
-            arr.forEach(({idx, dataUrl})=>{ App.State.images[idx].dataUrl = dataUrl; });
-            resolved = true; resolve();
-          } else if (type === 'error'){
-            clearTimeout(timer);
-            try { w.terminate(); w._revoke && w._revoke(); } catch {}
-            // fallback
-            fallbackProcess(files).then(()=>{ resolved = true; resolve(); }).catch(reject);
-          }
-        };
-        w.onerror = ()=>{
-          clearTimeout(timer);
-          try { w.terminate(); w._revoke && w._revoke(); } catch {}
-          fallbackProcess(files).then(()=>{ resolved = true; resolve(); }).catch(reject);
-        };
-
-        w.postMessage({ files });
-      });
-    }
-
-    function fallbackProcess(files){
-      App.Logger.warn('Worker falhou/tempo esgotado. Usando fallback no main thread.');
-      return new Promise((resolve, reject)=>{
-        let i = 0;
-        const next = ()=>{
-          if (i>=files.length) return resolve();
-          const f = files[i++];
-          const reader = new FileReader();
-          reader.onerror = ()=> reject(new Error('Erro ao ler imagem.'));
-          reader.onload = ()=>{
-            App.State.images[i-1].dataUrl = reader.result;
-            App.UI.setStatus(`Processando imagens (${i}/${files.length})...`);
-            next();
-          };
-          reader.readAsDataURL(f);
-        };
-        next();
-      });
-    }
-
-    App.Images = { processAll };
-  })();
-
-  // ============================
-  // Provider: OpenAI Chat Completions
-  // ============================
-  ;(function(){
-    const { APIError } = App.Errors;
-
-    function getMaxTokensParamName(model){
-      const m = (model||'').toLowerCase();
-      if (m.startsWith('gpt-5') || m.startsWith('o1') || m.startsWith('o3')) return 'max_completion_tokens';
-      return 'max_tokens';
-    }
-
-    function supportsCustomTemperature(model){
-      const m = (model||'').toLowerCase();
-      if (m.startsWith('gpt-5') || m.startsWith('o1') || m.startsWith('o3')) return false;
-      return true;
-    }
-
-    async function callOpenAIAPI(apiKey, model, messages, temperature, maxTokens){
-      const controller = new AbortController();
-      const to = setTimeout(()=> controller.abort(), App.Config.timeouts.apiMs);
-      try {
-        const payload = { model, messages };
-        if (supportsCustomTemperature(model)) {
-          payload.temperature = temperature;
-        }
-        payload[getMaxTokensParamName(model)] = maxTokens;
-        const res = await fetch(App.Config.openAIEndpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-          },
-          signal: controller.signal,
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok){
-          let msg = `Erro da API (${res.status})`;
-          try { const j = await res.json(); msg = j?.error?.message || msg; } catch {}
-          throw new APIError(msg, res.status);
-        }
-        const data = await res.json();
-        const content = data?.choices?.[0]?.message?.content || '';
-        return { content };
-      } catch(err){
-        if (err.name === 'AbortError') throw new APIError('Tempo esgotado (timeout).', 408);
-        if (err instanceof APIError) throw err;
-        throw new APIError(err?.message || 'Falha na chamada da API.', 520);
-      } finally {
-        clearTimeout(to);
-      }
-    }
-
-    App.Providers.OpenAI = { callOpenAIAPI, getMaxTokensParamName, supportsCustomTemperature };
-  })();
-
-  // ============================
-  // Controller & Validation
-  // ============================
-  ;(function(){
-    const { ValidationError, APIError, AppError } = App.Errors;
-
-    function buildInitialUserText(fields){
-      const lines = fields.map(f=> `- **${f.label}:** ${f.value}`);
-      const analysis = App.State.settings.analysis || App.Config.defaults.analysis;
-      return `${analysis}\n\n**Informações fornecidas:**\n${lines.join('\n')}`;
-    }
-
-    function buildMessagesForInitial(fields){
-      const system = App.State.settings.persona || App.Config.defaults.persona;
-      const text = buildInitialUserText(fields);
-      const parts = [{ type: 'text', text }];
-      for (const img of App.State.images){
-        if (img.dataUrl) parts.push({ type: 'image_url', image_url: { url: img.dataUrl } });
-      }
-      const messages = [
-        { role: 'system', content: system },
-        { role: 'user', content: parts }
-      ];
-      return messages;
-    }
-
-    function buildMessagesForChat(){
-      const system = App.State.settings.persona || App.Config.defaults.persona;
-      const messages = [{ role: 'system', content: system }, ...App.State.conversationHistory ];
-      return messages;
-    }
-
-    function validateApiKeyIfNeeded(){
-      if (App.State.settings.debug) return; // not required in debug
-      const k = document.getElementById('apiKey').value.trim();
-      if (!k) throw new ValidationError('Informe a OpenAI API key.');
-      if (!/^sk-/.test(k)) App.Logger.warn('API key não começa com sk- (pode estar usando outro formato).');
-      return k;
-    }
-
-    function validateBeforeAnalyze(){
-      const fields = App.UI.getFields();
-      App.UI.ensureImages();
-      return fields;
-    }
-
-    function showDebugPayload(obj){
-      const dbg = document.getElementById('debugContent');
-      const btn = document.getElementById('downloadDebug');
-      dbg.textContent = JSON.stringify(obj, null, 2);
-      App.UI.setDebugVisible(true);
-      btn.classList.remove('hidden');
-    }
-
-    async function onAnalyze(){
-      try {
-        App.UI.setStatus('Validando...');
-        const fields = validateBeforeAnalyze();
-        const messages = buildMessagesForInitial(fields);
-
-        // Debug flow: only preview
-        if (App.State.settings.debug){
-          const model = document.getElementById('model').value.trim() || App.Config.defaultModel;
-          const maxParam = App.Providers.OpenAI.getMaxTokensParamName(model);
-          const dbg = { endpoint: App.Config.openAIEndpoint, model, [maxParam]: App.State.settings.maxTokens, messages, imageFiles: App.State.images.map(i=> i.name) };
-          if (App.Providers.OpenAI.supportsCustomTemperature(model)) dbg.temperature = App.State.settings.temperature;
-          showDebugPayload(dbg);
-          App.UI.setStatus('Debug: payload gerado. Nenhuma chamada foi feita.');
-          App.UI.showChat();
-          App.State.conversationHistory.push({ role: 'user', content: messages[1].content });
-          App.UI.pushChat('user', marked.parseInline('**[Debug]** Envio inicial (sem chamada de API).'));
-          return;
-        }
-
-        const apiKey = validateApiKeyIfNeeded();
-
-        App.UI.setStatus('Chamando a IA...');
-        const model = document.getElementById('model').value.trim() || App.Config.defaultModel;
-        const { content } = await App.Providers.OpenAI.callOpenAIAPI(
-          apiKey,
-          model,
-          messages,
-          Number(App.State.settings.temperature)||1,
-          Number(App.State.settings.maxTokens)||2048
-        );
-
-        App.State.conversationHistory.push({ role: 'user', content: messages[1].content });
-        App.State.conversationHistory.push({ role: 'assistant', content });
-        App.UI.showChat();
-        App.UI.pushChat('user', marked.parseInline('Envio inicial com imagens.'));
-        App.UI.pushChat('assistant', content);
-        App.UI.setStatus('Pronto.');
-      } catch(err){ handleError(err); }
-      finally { App.Storage.save(); }
-    }
-
-    async function onFollowup(e){
-      e.preventDefault();
-      const input = document.getElementById('followupInput');
-      const text = (input.value||'').trim();
-      if (!text) return;
-      input.value='';
-
-      try {
-        App.State.conversationHistory.push({ role: 'user', content: text });
-        App.UI.pushChat('user', text);
-        App.UI.setStatus('Chamando a IA...');
-
-        // Debug follow-up: do not call API
-        if (App.State.settings.debug){
-          const model = document.getElementById('model').value.trim() || App.Config.defaultModel;
-          const maxParam = App.Providers.OpenAI.getMaxTokensParamName(model);
-          const dbg = { endpoint: App.Config.openAIEndpoint, model, [maxParam]: App.State.settings.maxTokens, messages: buildMessagesForChat() };
-          if (App.Providers.OpenAI.supportsCustomTemperature(model)) dbg.temperature = App.State.settings.temperature;
-          showDebugPayload(dbg);
-          App.UI.pushChat('assistant', '_[Debug] Nenhuma chamada foi feita._');
-          App.UI.setStatus('Debug: payload gerado.');
-          return;
-        }
-
-        const apiKey = validateApiKeyIfNeeded();
-        const model = document.getElementById('model').value.trim() || App.Config.defaultModel;
-        const { content } = await App.Providers.OpenAI.callOpenAIAPI(
-          apiKey,
-          model,
-          buildMessagesForChat(),
-          Number(App.State.settings.temperature)||1,
-          Number(App.State.settings.maxTokens)||2048
-        );
-        App.State.conversationHistory.push({ role: 'assistant', content });
-        App.UI.pushChat('assistant', content);
-        App.UI.setStatus('Pronto.');
-      } catch(err){ handleError(err); }
-      finally { App.Storage.save(); }
-    }
-
-    function handleError(err){
-      let msg = 'Ocorreu um erro.';
-      if (err instanceof ValidationError) msg = err.message;
-      else if (err instanceof APIError) {
-        if (err.status === 401) msg = 'API key inválida.';
-        else if (err.status === 429) msg = 'Limite de requisições atingido (rate limit). Tente novamente mais tarde.';
-        else if (err.status === 408) msg = 'Tempo esgotado na chamada.';
-        else msg = err.message || msg;
-      } else if (err instanceof AppError) msg = err.message;
-      else if (err?.message) msg = err.message;
-      App.UI.setStatus(msg);
-      App.Logger.error(err);
-      // Also surface in chat for transparency
-      try { App.UI.showChat(); App.UI.pushChat('assistant', `⚠️ **Erro:** ${msg}`); } catch {}
-    }
-
-    // Expose
-    App.Controller = { onAnalyze, onFollowup, handleError };
-
-    // Bind events
-    document.getElementById('analyzeBtn').addEventListener('click', onAnalyze);
-    document.getElementById('followupForm').addEventListener('submit', onFollowup);
-  })();
-
-  // ============================
-  // Settings Modal, Key Validation, Persistence
-  // ============================
-  ;(function(){
-    const modal = document.getElementById('settingsModal');
-    const openBtn = document.getElementById('openSettings');
-    const saveBtn = document.getElementById('saveSettings');
-
-    function open(){
-      // load current
-      document.getElementById('persona').value = App.State.settings.persona || App.Config.defaults.persona;
-      document.getElementById('analysis').value = App.State.settings.analysis || App.Config.defaults.analysis;
-      document.getElementById('temperature').value = App.State.settings.temperature;
-      document.getElementById('maxTokens').value = App.State.settings.maxTokens;
-      document.getElementById('debugMode').checked = !!App.State.settings.debug;
-      document.getElementById('autoSave').checked = !!App.State.settings.autoSave;
-      document.getElementById('saveKey').checked = !!App.State.settings.saveKey;
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    }
-    function close(){ modal.classList.add('hidden'); modal.classList.remove('flex'); }
-
-    openBtn.addEventListener('click', open);
-    modal.addEventListener('click', (e)=>{ if (e.target.matches('[data-close]')) close(); });
-
-    saveBtn.addEventListener('click', ()=>{
-      App.State.settings.persona = document.getElementById('persona').value;
-      App.State.settings.analysis = document.getElementById('analysis').value;
-      App.State.settings.temperature = Number(document.getElementById('temperature').value)||1;
-      App.State.settings.maxTokens = Number(document.getElementById('maxTokens').value)||2048;
-      App.State.settings.debug = !!document.getElementById('debugMode').checked;
-      App.State.settings.autoSave = !!document.getElementById('autoSave').checked;
-      App.State.settings.saveKey = !!document.getElementById('saveKey').checked;
-      App.Storage.save();
-      App.UI.setDebugVisible(App.State.settings.debug);
-      close();
-    });
-
-    // Model field sync
-    const modelEl = document.getElementById('model');
-    modelEl.addEventListener('input', ()=>{
-      App.State.settings.model = modelEl.value.trim() || App.Config.defaultModel;
-      const tInput = document.getElementById('temperature');
-      const tHint = document.getElementById('temperatureHint');
-      const supports = App.Providers.OpenAI.supportsCustomTemperature(App.State.settings.model);
-      tInput.disabled = !supports;
-      tHint.classList.toggle('hidden', supports);
-      App.Storage.save();
-    });
-
-    // Debounced API key format validation (no network ping)
-    let keyTimer = null;
-    const keyEl = document.getElementById('apiKey');
-    const hintEl = document.getElementById('apiKeyHint');
-    keyEl.addEventListener('input', ()=>{
-      clearTimeout(keyTimer);
-      keyTimer = setTimeout(()=>{
-        const v = keyEl.value.trim();
-        if (!v) { hintEl.textContent = 'A chave fica somente no seu navegador.'; return; }
-        if (/^sk-[A-Za-z0-9]{10,}/.test(v)) {
-          hintEl.textContent = 'Chave com formato válido (não testada).';
-        } else {
-          hintEl.textContent = 'Formato de chave incomum. Verifique se copiou corretamente (ex.: inicia com sk-).';
-        }
-      }, App.Config.ui.debounceMs);
-    });
-
-    // Load saved settings on boot
-    App.Storage.load();
-    document.getElementById('model').value = App.State.settings.model || App.Config.defaultModel;
-    App.UI.setDebugVisible(App.State.settings.debug);
-    // Initialize temperature UI state based on current model
-    try {
-      const tInput = document.getElementById('temperature');
-      const tHint = document.getElementById('temperatureHint');
-      const supports = App.Providers.OpenAI.supportsCustomTemperature(App.State.settings.model || App.Config.defaultModel);
-      tInput.disabled = !supports;
-      tHint.classList.toggle('hidden', supports);
-    } catch {}
-  })();
-
-  </script>
+  <script type="module" src="./main.js"></script>
 </body>
 </html>
+ 
