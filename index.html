@@ -38,7 +38,15 @@
 
       <div id="fields" class="space-y-3"></div>
       <div class="mt-3 flex gap-2">
-        <button id="addField" class="btn">+ Campo</button>
+        <select id="presetFields" class="btn">
+          <option value="">Campos comuns...</option>
+          <option value="Material">Material</option>
+          <option value="Dimensões (mm)">Dimensões (mm)</option>
+          <option value="Marcações Visíveis">Marcações Visíveis</option>
+          <option value="Quantidade">Quantidade</option>
+          <option value="Outros Detalhes">Outros Detalhes</option>
+        </select>
+        <button id="addField" class="btn">+ Campos</button>
         <button id="resetFields" class="btn">Redefinir</button>
       </div>
 

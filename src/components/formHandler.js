@@ -18,6 +18,12 @@ export function initializeForm(){
   document.getElementById('addField').addEventListener('click', ()=>{
     fieldsEl.appendChild(createFieldRow());
   });
+  document.getElementById('presetFields').addEventListener('change', (e)=>{
+    if (e.target.value) {
+      fieldsEl.appendChild(createFieldRow(e.target.value, ''));
+      e.target.value = ''; // Reset dropdown
+    }
+  });
   document.getElementById('resetFields').addEventListener('click', resetForm);
 }
 
@@ -25,11 +31,8 @@ export function resetForm(){
   const fieldsEl = document.getElementById('fields');
   fieldsEl.innerHTML = '';
   fieldsEl.appendChild(createFieldRow('Descrição',''));
-  fieldsEl.appendChild(createFieldRow('Marcações Visíveis',''));
+  fieldsEl.appendChild(createFieldRow('Part Number',''));
   fieldsEl.appendChild(createFieldRow('Máquina/Modelo',''));
-  fieldsEl.appendChild(createFieldRow('Dimensões (mm)',''));
-  fieldsEl.appendChild(createFieldRow('Material',''));
-  fieldsEl.appendChild(createFieldRow('Outros Detalhes',''));
 }
 
 export function getFormData(){
