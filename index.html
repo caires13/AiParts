@@ -61,6 +61,13 @@
         <h2 class="text-lg font-semibold">Imagens</h2>
         <div class="text-xs text-slate-400">Tipos: JPG, PNG, WEBP, GIF · 10 arquivos máx. · 10 MB cada</div>
       </div>
+
+      <div class="mb-4">
+        <label class="text-sm block mb-1" for="specialRequest">Instruções adicionais</label>
+        <textarea id="specialRequest" rows="3" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2" placeholder="Ex.: Analise o manual e retorne todos os nomes e part numbers no formato de tabela."></textarea>
+        <p class="text-xs text-slate-400 mt-1">Este campo é opcional e não faz parte dos campos principais. Será enviado junto com as imagens.</p>
+      </div>
+
       <div id="dropzone" class="dropzone rounded-xl p-6 text-center cursor-pointer">
         <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="hidden" />
         <p class="text-slate-300">Arraste e solte aqui, ou <span class="underline">clique para selecionar</span></p>

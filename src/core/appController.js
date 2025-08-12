@@ -7,15 +7,16 @@ import { Logger, ValidationError, APIError } from '../utils/logger.js';
 import { validateApiKey, validateForm } from '../utils/validator.js';
 import { getState, getHistory, addMessageToHistory, updateSettings, loadSettings, saveSettings, setApiKeyPreference, getApiKey, setImages, getImages, getPrompts } from './stateManager.js';
 
-function buildInitialUserText(fields){
+function buildInitialUserText(fields, specialRequest){
   const lines = fields.map(f=> `- **${f.label}:** ${f.value}`);
   const { analysis } = getPrompts();
-  return `${analysis}\n\n**Informações fornecidas:**\n${lines.join('\n')}`;
+  const extra = (specialRequest && specialRequest.trim()) ? `\n\n**Instruções adicionais do usuário:**\n${specialRequest.trim()}` : '';
+  return `${analysis}\n\n**Informações fornecidas:**\n${lines.join('\n')}${extra}`;
 }
 
-function buildMessagesForInitial(fields){
+function buildMessagesForInitial(fields, specialRequest){
   const { persona } = getPrompts();
-  const text = buildInitialUserText(fields);
+  const text = buildInitialUserText(fields, specialRequest);
   const parts = [{ type: 'text', text }];
   for (const img of getImages()){
     if (img.dataUrl) parts.push({ type: 'image_url', image_url: { url: img.dataUrl } });
@@ -111,7 +112,7 @@ export async function handleFormSubmission(){
     validateForm(data);
 
     const debug = getState().settings.debug;
-    const messages = buildMessagesForInitial(form.fields);
+    const messages = buildMessagesForInitial(form.fields, form.specialRequest);
 
     if (debug){
       const maxParam = getMaxTokensParamName(form.model);

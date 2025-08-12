@@ -45,11 +45,12 @@ export function getFormData(){
     const val = (values[i].value||'').trim();
     if (label && val) fields.push({label, value: val});
   });
+  const specialRequest = (document.getElementById('specialRequest')?.value || '').trim();
   const apiKey = document.getElementById('apiKey').value || '';
   const model = (document.getElementById('model').value||DEFAULTS.model).trim();
   const maxTokens = Number(document.getElementById('maxTokens').value)||DEFAULTS.maxTokens;
   const temperature = Number(document.getElementById('temperature').value)||DEFAULTS.temperature;
-  return { fields, apiKey, model, maxTokens, temperature };
+  return { fields, apiKey, model, maxTokens, temperature, specialRequest };
 }
 
 
