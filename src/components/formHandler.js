@@ -18,6 +18,12 @@ export function initializeForm(){
   document.getElementById('addField').addEventListener('click', ()=>{
     fieldsEl.appendChild(createFieldRow());
   });
+  document.getElementById('presetFields').addEventListener('change', (e)=>{
+    if (e.target.value) {
+      fieldsEl.appendChild(createFieldRow(e.target.value, ''));
+      e.target.value = ''; // Reset dropdown
+    }
+  });
   document.getElementById('resetFields').addEventListener('click', resetForm);
 }
 

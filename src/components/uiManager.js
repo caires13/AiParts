@@ -1,6 +1,5 @@
 import { DEFAULTS, supportsCustomTemperature } from '../utils/constants.js';
 import { Logger } from '../utils/logger.js';
-import { createFieldRow } from './formHandler.js'; // Add this import
 
 let controller = null;
 
@@ -15,15 +14,6 @@ export function initializeEventListeners(callbacks){
   });
   document.getElementById('downloadDebug').addEventListener('click', (e)=>{
     e.preventDefault(); controller.onDownloadDebug();
-  });
-
-  // Add preset fields event listener
-  document.getElementById('presetFields').addEventListener('change', (e)=>{
-    if (e.target.value) {
-      const fieldsEl = document.getElementById('fields');
-      fieldsEl.appendChild(createFieldRow(e.target.value, ''));
-      e.target.value = ''; // Reset dropdown
-    }
   });
 
   const modelEl = document.getElementById('model');
